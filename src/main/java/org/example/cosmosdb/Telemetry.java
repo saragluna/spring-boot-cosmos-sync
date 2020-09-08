@@ -4,7 +4,7 @@ import com.azure.spring.data.cosmos.core.mapping.Container;
 import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
 import org.springframework.data.annotation.Id;
 
-@Container(containerName = "telemetry", autoCreateContainer = false)
+@Container(containerName = "telemetry", autoCreateContainer = false, ru = "4000")
 public class Telemetry {
     @Id
     @PartitionKey

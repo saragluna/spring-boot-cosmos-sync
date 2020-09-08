@@ -1,15 +1,14 @@
 package org.example.cosmosdb;
 
-import java.time.Instant;
+import com.azure.cosmos.CosmosAsyncClient;
+import com.azure.cosmos.models.PartitionKey;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.azure.cosmos.CosmosAsyncClient;
-import com.azure.cosmos.models.PartitionKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +27,11 @@ public class TelemetryController {
     @Autowired
     private TelemetryRepository repository;
 
+    @Autowired
+    private CosmosAsyncClient cosmosAsyncClient;
+
+    @Value("${azure.cosmosdb.database}")
+    private String database;
 
     private Telemetry newRandomTelemetry() {
         Random random = ThreadLocalRandom.current();
@@ -47,6 +51,13 @@ public class TelemetryController {
     public ResponseEntity<String> newRandomTelemetryItem() {
         Telemetry telemetry = newRandomTelemetry();
         repository.save(telemetry);
+        return ResponseEntity.status(HttpStatus.OK).body(telemetry.getId());
+    }
+
+    @PostMapping("/random-sdk")
+    public ResponseEntity<String> newRandomTelemetryItemWithSDK() {
+        Telemetry telemetry = newRandomTelemetry();
+        cosmosAsyncClient.getDatabase(database).getContainer("telemetry").createItem(telemetry).block();
         return ResponseEntity.status(HttpStatus.OK).body(telemetry.getId());
     }
 
